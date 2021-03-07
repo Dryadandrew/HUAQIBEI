@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+
+<body>
+    <div id="app" v-loading="loading">
+    <div style="height:15px"></div>
+    <span style="color:#303133;font-size:20px;margin:30px">保障创业公司与投资人之间财务透明的自动化数据平台-Demo</span>
+    <div style="height:15px"></div>
+    <!-- <el-divider></el-divider> -->
+        <el-card class="box-card">
+            <div slot="header" class="clearfix">
+                <span>第一步：上传“银行流水单”(仅支持.xls .xlsx格式)</span>
+                <el-button style="float: right; padding: 3px 0" type="text">上海科技大学 D.H 队</el-button>
+            </div>
+            <el-upload class="upload-demo" drag :on-success="successHandleBank" accept=".xls,.xlsx,.xlsm"
+            :limit="1" :multiple="false"  action="http://femtostudio.top/uploadBank">
+                <i class="el-icon-upload" v-if="!bankOk"></i>
+                <i class="el-icon-check" v-if="bankOk" style="font-size:67px;margin:40px 0 16px;line-height: 50px;"></i>
+                <div class="el-upload__text" v-if="!bankOk">将文件拖到此处，或<em>点击上传</em></div>
+                <div class="el-upload__text" v-if="bankOk">文件已经上传</div>
+                <!-- <div class="el-upload__tip" slot="tip">两个文件都上传成功后将自动进行计算。</div> -->
+            </el-upload>
+        </el-card>
+
+        <el-card class="box-card">
+            <div slot="header" class="clearfix">
+                <span>第二步：上传“企业内部账单”(仅支持.xls .xlsx格式)</span>
+                <el-button style="float: right; padding: 3px 0" type="text">上海科技大学 D.H 队</el-button>
+            </div>
+            <el-upload class="upload-demo" drag :on-success="successHandleCompany" accept=".xls,.xlsx,.xlsm"
+                action="http://femtostudio.top/uploadCompany" :limit="1" :multiple="false" >
+                <i class="el-icon-upload" v-if="!companyOk"></i>
+                <i class="el-icon-check" v-if="companyOk" style="font-size:67px;margin:40px 0 16px;line-height: 50px;"></i>
+                <div class="el-upload__text" v-if="!companyOk">将文件拖到此处，或<em>点击上传</em></div>
+                <div class="el-upload__text" v-if="companyOk">文件已经上传</div>
+                <div class="el-upload__tip" slot="tip" v-if="companyOk">两个文件都上传成功后将自动进行计算。</div>
+            </el-upload>
+        </el-card>
+
+        <el-card class="box-card">
+            <div slot="header" class="clearfix">
+                <span>第三步：提交到云端</span>
+                <el-button style="float: right; padding: 3px 0" type="text">上海科技大学 D.H 队</el-button>
+            </div>
+            <div style="margin-bottom: 0px;">
+                <el-button type="primary" style="margin: 10px;" @click="submit">确认提交</el-button>
+            </div>
+        </el-card>
+
+    </div>
+</body>
+<!-- import Vue before Element -->
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                visible: false,
+                loading: false,
+                bankOk: false,
+                companyOk: false,
+            }
+        },
+        methods: {
+            successHandleBank(response, file, fileList) {
+                console.log(file)
+                console.log(fileList)
+                this.bankOk = true
+            },
+            successHandleCompany(response, file, fileList) {
+                console.log(file)
+                console.log(fileList)
+                this.companyOk = true
+            },
+            submit(){
+                if (!(this.bankOk && this.companyOk)){
+                    this.$notify.error({
+                    title: '错误',
+                    message: '请确保两个文件都已经上传'
+                    });
+                    return
+                }
+                this.loading = true
+                var httpRequest = new XMLHttpRequest();//第一步：建立所需的对象
+                httpRequest.open('GET', 'http://femtostudio.top/submit?cmd=run', true);//第二步：打开连接  将请求参数写在url中  ps:"./Ptest.php?name=test&nameone=testone"
+                httpRequest.send();//第三步：发送请求  将请求参数写在URL中
+                /**
+                 * 获取数据后的处理程序
+                 */
+                httpRequest.onreadystatechange = function () {
+                    if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+                        var json = httpRequest.responseText;//获取到json字符串，还需解析
+                        console.log(json);
+                        window.location.href = 'http://femtostudio.top/download';
+                    }
+                };
+                // axios.get('http://femtostudio.top/submit',{
+                // params: {
+                //         cmd:"run",}
+                // })
+                // .then(res => {
+                //     console.log(res)
+                //     if (res.data == "OK"){
+                //         window.location.href = 'http://femtostudio.top/download';
+                //     }
+                // })
+            },
+        }
+    })
+</script>
+
+</html>
+
+<script>
+    // myUpload(content) {
+    //     console.log('myUpload...');
+    //     axios({
+    //         method: 'post',
+    //         url: content.action,
+    //         timeout: 20000,
+    //         data: content.file
+    //     }).then(res => {
+    //         content.onSuccess('配时文件上传成功')
+    //     }).catch(error => {
+    //         if (error.response) {
+    //             content.onError('配时文件上传失败(' + error.response.status + ')，' + error.response.data);
+    //         } else if (error.request) {
+    //             content.onError('配时文件上传失败，服务器端无响应');
+    //         } else {
+    //             content.onError('配时文件上传失败，请求封装失败');
+    //         }
+    //     });
+    // }
+
+    // this.loading = true
+    // var t = setTimeout(function(){
+    //     window.location.href = 'http://127.0.0.1:8989/';
+    // },5000)
+    // let timer = setInterval(function(){
+    //     axios.get('http://127.0.0.1:8989/resultSearch',{
+    //         params: {
+    //             filename: file.name
+    //         }
+    //     })
+    //     .then(res => {
+    //         console.log(res)
+    //     })
+    // },5000)
+</script>
